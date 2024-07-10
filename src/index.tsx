@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import Heart from './heart';
 import NewScreen from './screen';
+import Sanrio from './sanrio'
 
 const MyComponent = () => {
   const [showNewScreen, setShowNewScreen] = useState(false);
@@ -16,11 +17,14 @@ const MyComponent = () => {
 
   return (
     <View style={styles.container}>
-      {showNewScreen ? (
-        <NewScreen onGoBack={handleGoBack} />
-      ) : (
-        <Heart onThresholdReached={handleThresholdReached} />
-      )}
+      <View style={styles.coreContainer}>
+        {showNewScreen ? (
+          <NewScreen onGoBack={handleGoBack} />
+        ) : (
+          <Heart onThresholdReached={handleThresholdReached} />
+        )}
+      </View>
+      <Sanrio width={250} height={250} style={styles.sanrio} />
     </View>
   );
 };
@@ -30,15 +34,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,  // 添加边框
-    borderColor: 'blue',  // 设置边框颜色
+    position: 'relative',
   },
-  text: {
-    textAlign: 'center',
-    color: 'green',
-    borderWidth: 1,  // 添加边框
-    borderColor: 'red',  // 设置边框颜色
+  coreContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  sanrio: {
+    position: 'absolute',
+    bottom: -50,  // 调整负值来减少底部空白
+    alignSelf: 'center',  // 确保 Sanrio 组件水平居中
+    zIndex: 1,
   },
 });
 
 export default MyComponent;
+
