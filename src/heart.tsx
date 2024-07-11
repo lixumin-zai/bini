@@ -19,9 +19,10 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 interface HeartProps {
   onThresholdReached: () => void;
+  onhandlePan: (ison: boolean) => void;
 }
 
-const Heart: React.FC<HeartProps> = ({ onThresholdReached }) => {
+const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan }) => {
   const scale = useSharedValue(1);
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
@@ -65,6 +66,7 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached }) => {
       startY.value = offsetY.value;
     })
     .onUpdate((event) => {
+      runOnJS(onhandlePan)(true);
       scale.value = withRepeat(withSpring(1, { damping: 1.4 }), -1, true);
       offsetX.value = startX.value + event.translationX;
       offsetY.value = startY.value + event.translationY;
@@ -72,14 +74,11 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached }) => {
       opacity.value = Math.min(1, distance / MAX_DISTANCE);
     })
     .onEnd(() => {
+      runOnJS(onhandlePan)(false);
       offsetX.value = withSpring(0);
       offsetY.value = withSpring(0);
       opacity.value = withSpring(1);
-      // if (offsetY.value > THRESHOLD) {
-      //   runOnJS(() => {
-      //     navigation.navigate('NewPage'); // 替换为目标页面名称
-      //   })();
-      // }
+      scale.value = withSpring(1);
     });
 
   const combinedGesture = Gesture.Simultaneous(longPress, dragGesture);

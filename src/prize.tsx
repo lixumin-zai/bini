@@ -5,8 +5,9 @@ import Animated, {
   useSharedValue,
   withSpring,
   withRepeat,
+  runOnJS
 } from 'react-native-reanimated';
-import Svg, { Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Rect, Text as SvgText, Circle, Path } from 'react-native-svg';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 // 导入JSON文件
@@ -16,14 +17,17 @@ const { width, height } = Dimensions.get('window');
 const centerX = width / 2;
 const centerY = height / 2;
 const MAX_DISTANCE = Math.sqrt(centerX * centerX + centerY * centerY);
+const yTHRESHOLD = height * 0.1; // 屏幕下方的1/10
+const xTHRESHOLD = width * 0.3; // width * (1-0.3)
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 interface PrizeProps {
   onGoBack: () => void;
+  onhandlePan: (ison: boolean) => void;
 }
 
-const Prize: React.FC<PrizeProps> = ({ onGoBack }) => {
+const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
   const [message, setMessage] = useState('');
   const scale = useSharedValue(1);
   const offsetX = useSharedValue(0);
@@ -47,24 +51,31 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack }) => {
 
   const dragGesture = Gesture.Pan()
     .onBegin(() => {
-      scale.value = withRepeat(withSpring(1.2, { damping: 1.7 ,stiffness:20}), -1, true);
+      scale.value = withRepeat(withSpring(1.2, { damping: 1.7, stiffness:20}), -1, true);
       startX.value = offsetX.value;
       startY.value = offsetY.value;
     })
     .onUpdate((event) => {
+      runOnJS(onhandlePan)(true);
       const newScale = 1 - event.translationY / (centerY * 2); // 缩放比例计算
       // scale.value = withRepeat(withSpring(1.2, { damping: 1.7 ,stiffness:20}), -1, true);
-      scale.value = withSpring(newScale, { damping: 1.4 });
+      scale.value = withSpring(newScale, { damping: 1.4, stiffness:20});
       offsetX.value = startX.value + event.translationX / newScale;
       offsetY.value = startY.value + event.translationY / newScale;
       const distance = Math.sqrt(Math.pow(offsetX.value - centerX, 2) + Math.pow(offsetY.value - centerY, 2));
       opacity.value = Math.min(1, distance / MAX_DISTANCE);
     })
     .onEnd(() => {
+      runOnJS(onhandlePan)(false);
       offsetX.value = withSpring(0);
       offsetY.value = withSpring(0);
       opacity.value = withSpring(1);
       scale.value = withSpring(1);
+      // if (offsetY.value > THRESHOLD) {
+      //   runOnJS(() => {
+      //     opacity.value = withSpring(1);
+      //   })();
+      // }
     });
 
   const combinedGesture = Gesture.Simultaneous(
@@ -86,15 +97,6 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack }) => {
       <GestureDetector gesture={combinedGesture}>
         <Animated.View style={animatedStyle}>
           <Svg height="200" width="300">
-            <AnimatedRect
-              x="0"
-              y="0"
-              width="300"
-              height="200"
-              stroke="black"
-              strokeWidth="2"
-              fill="lightgrey"
-            />
             <SvgText
               x="150"
               y="100"
