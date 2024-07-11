@@ -1,30 +1,27 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import Heart from './heart';
-import NewScreen from './screen';
-import Sanrio from './sanrio'
+import Prize from './prize';
+import Cinnamoroll from './cinnamoroll';
 
 const MyComponent = () => {
-  const [showNewScreen, setShowNewScreen] = useState(false);
+  const [showPage, setShowPage] = useState(1);
 
   const handleThresholdReached = () => {
-    setShowNewScreen(true);
+    setShowPage(2);
   };
 
   const handleGoBack = () => {
-    setShowNewScreen(false);
+    setShowPage(1);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.coreContainer}>
-        {showNewScreen ? (
-          <NewScreen onGoBack={handleGoBack} />
-        ) : (
-          <Heart onThresholdReached={handleThresholdReached} />
-        )}
+        {showPage === 1 && <Heart onThresholdReached={handleThresholdReached} />}
+        {showPage === 2 && <Prize onGoBack={handleGoBack} />}
       </View>
-      <Sanrio width={250} height={250} style={styles.sanrio} />
+      <Cinnamoroll width={250} height={250} style={styles.cinnamoroll} />
     </View>
   );
 };
@@ -41,10 +38,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 2,
   },
-  sanrio: {
+  cinnamoroll: {
     position: 'absolute',
-    bottom: -50,  // 调整负值来减少底部空白
-    alignSelf: 'center',  // 确保 Sanrio 组件水平居中
+    bottom: -50,  
+    alignSelf: 'center',  
     zIndex: 1,
   },
 });

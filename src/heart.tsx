@@ -75,6 +75,11 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached }) => {
       offsetX.value = withSpring(0);
       offsetY.value = withSpring(0);
       opacity.value = withSpring(1);
+      // if (offsetY.value > THRESHOLD) {
+      //   runOnJS(() => {
+      //     navigation.navigate('NewPage'); // 替换为目标页面名称
+      //   })();
+      // }
     });
 
   const combinedGesture = Gesture.Simultaneous(longPress, dragGesture);
