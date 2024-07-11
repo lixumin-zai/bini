@@ -10,7 +10,7 @@ import Animated, {
 import CinnamorollSvg from "./cinnamoroll_svg";
 
 interface CinnamorollProps {
-    showFixedImage: boolean;
+    showFixedImage: number;
   }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -18,8 +18,13 @@ const { width: screenWidth } = Dimensions.get('window');
 const images = [
   { source: require('./public/1.png') },
   { source: require('./public/2.png') },
-  // { source: require('./public/image3.jpg') },
+  { source: require('./public/3.png') },
 ];
+
+const polling_images = [
+    { source: require('./public/1.png') },
+    { source: require('./public/2.png') },
+  ];
 
 const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,7 +56,7 @@ const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
   }, []);
 
   const updateIndex = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % polling_images.length);
   };
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -61,18 +66,20 @@ const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
   });
 
   return (
-    <View style={styles.container}>
-        {showFixedImage ? (
-        // <Image source={images[0].source} style={styles.imageContainer} />
-        <CinnamorollSvg style={styles.imageContainer}/>
-      ) : (
+    <View style={styles.container} >
+        {showFixedImage === 0 && 
         <Animated.View style={[styles.imageContainer, animatedStyle]}>
-            {images[currentIndex] && (
-            <Image source={images[currentIndex].source} style={styles.image} />
+            {polling_images[currentIndex] && (
+            <Image source={polling_images[currentIndex].source} style={styles.image} />
             )}
-        </Animated.View>
-      )}
-      
+        </Animated.View>}
+        {showFixedImage === 1 && <CinnamorollSvg style={styles.imageContainer}/>}
+        {showFixedImage >= 2 && 
+            <Animated.View style={[styles.imageContainer, animatedStyle]}>
+                {images[showFixedImage] && (
+                <Image source={images[showFixedImage].source} style={styles.image} />
+                )}
+            </Animated.View>}
     </View>
   );
 };

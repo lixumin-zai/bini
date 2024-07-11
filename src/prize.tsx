@@ -24,7 +24,7 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 interface PrizeProps {
   onGoBack: () => void;
-  onhandlePan: (ison: boolean) => void;
+  onhandlePan: (image_id: number) => void;
 }
 
 const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
@@ -36,27 +36,38 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
   const startY = useSharedValue(0);
   const opacity = useSharedValue(1);
 
+  const postRequest = async () => {
+    try {
+      await fetch("https://open.feishu.cn/open-apis/bot/v2/hook/09323ac4-7ce1-4056-81f6-bc5196c58167", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "msg_type": "text",
+          "content": {
+            "text": `<at user_id=''>所有人</at>: ${message}`,
+          }
+        }),
+      });
+    } catch (error) {
+      console.error('Error posting request:', error);
+    }
+  };
+
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * messages.messages.length);
     setMessage(messages.messages[randomIndex]);
   }, []);
 
-  // const longPress = Gesture.LongPress()
-  //   .onBegin(() => {
-  //     scale.value = withRepeat(withSpring(1.2, { damping: 1.7 ,stiffness:20}), -1, true);
-  //   })
-  //   .onFinalize(() => {
-  //     scale.value = withSpring(1, { damping: 1.7 });
-  //   });
-
   const dragGesture = Gesture.Pan()
     .onBegin(() => {
-      scale.value = withRepeat(withSpring(1.2, { damping: 1.7, stiffness:20}), -1, true);
+      scale.value = withRepeat(withSpring(1.2, { damping: 2, stiffness:20}), -1, true);
       startX.value = offsetX.value;
       startY.value = offsetY.value;
     })
     .onUpdate((event) => {
-      runOnJS(onhandlePan)(true);
+      runOnJS(onhandlePan)(1);
       const newScale = 1 - event.translationY / (centerY * 2); // 缩放比例计算
       // scale.value = withRepeat(withSpring(1.2, { damping: 1.7 ,stiffness:20}), -1, true);
       scale.value = withSpring(newScale, { damping: 1.4, stiffness:20});
@@ -66,16 +77,18 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
       opacity.value = Math.min(1, distance / MAX_DISTANCE);
     })
     .onEnd(() => {
-      runOnJS(onhandlePan)(false);
+      const centerXCurrent = offsetX.value + width / 2;
+      const centerYCurrent = offsetY.value + height / 2;
+      if (centerYCurrent > height - yTHRESHOLD) {
+        runOnJS(onhandlePan)(2);
+        runOnJS(postRequest)();
+      }else{
+        runOnJS(onhandlePan)(0);
+      }
       offsetX.value = withSpring(0);
       offsetY.value = withSpring(0);
       opacity.value = withSpring(1);
       scale.value = withSpring(1);
-      // if (offsetY.value > THRESHOLD) {
-      //   runOnJS(() => {
-      //     opacity.value = withSpring(1);
-      //   })();
-      // }
     });
 
   const combinedGesture = Gesture.Simultaneous(

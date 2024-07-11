@@ -19,7 +19,7 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 interface HeartProps {
   onThresholdReached: () => void;
-  onhandlePan: (ison: boolean) => void;
+  onhandlePan: (image_id: number) => void;
 }
 
 const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan }) => {
@@ -66,7 +66,7 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan }) => {
       startY.value = offsetY.value;
     })
     .onUpdate((event) => {
-      runOnJS(onhandlePan)(true);
+      runOnJS(onhandlePan)(1);
       scale.value = withRepeat(withSpring(1, { damping: 1.4 }), -1, true);
       offsetX.value = startX.value + event.translationX;
       offsetY.value = startY.value + event.translationY;
@@ -74,7 +74,7 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan }) => {
       opacity.value = Math.min(1, distance / MAX_DISTANCE);
     })
     .onEnd(() => {
-      runOnJS(onhandlePan)(false);
+      runOnJS(onhandlePan)(0);
       offsetX.value = withSpring(0);
       offsetY.value = withSpring(0);
       opacity.value = withSpring(1);

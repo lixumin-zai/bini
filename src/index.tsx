@@ -8,18 +8,20 @@ const MyComponent = () => {
   // 控制主要页面
   const [showPage, setShowPage] = useState(1);
   // 主组件与图片展示组件交互
-  const [showFixedImage, setShowFixedImage] = useState(false);
+  const [showFixedImage, setShowFixedImage] = useState(0);
 
   const handleThresholdReached = () => {
     setShowPage(2);
   };
 
   const handleGoBack = () => {
+    setShowFixedImage(0);
     setShowPage(1);
   };
 
-  const handlePan = (ison: boolean) => {
-    setShowFixedImage(ison);
+  const handlePan = (image_id: number) => {
+    // 0 轮询 其他固定
+    setShowFixedImage(image_id);
   };
 
   return (
