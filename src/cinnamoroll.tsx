@@ -73,7 +73,11 @@ const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
             <Image source={polling_images[currentIndex].source} style={styles.image} />
             )}
         </Animated.View>}
-        {showFixedImage === 1 && <CinnamorollSvg style={styles.imageContainer}/>}
+        {showFixedImage === 1 && 
+            <View style={styles.imageContainer}>
+            <CinnamorollSvg />
+            </View>
+        }
         {showFixedImage >= 2 && 
             <Animated.View style={[styles.imageContainer, animatedStyle]}>
                 {images[showFixedImage] && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Button, Dimensions } from 'react-native';
+import { View, StyleSheet, Button, Dimensions, Text } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -108,11 +108,17 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
   return (
     <GestureHandlerRootView style={styles.container}>
       <GestureDetector gesture={combinedGesture}>
+      <View style={styles.border}>
+      {/* <Text style={{fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+    textAlign: 'center',}} >恭喜抽中</Text> */}
         <Animated.View style={animatedStyle}>
-          <Svg height="200" width="300">
+        
+          <Svg height={height* 0.06} width={width * 0.6}>
             <SvgText
-              x="150"
-              y="100"
+              x={width * 0.3}
+              y={height* 0.04}
               fontSize="16"
               fontWeight="bold"
               fill="black"
@@ -122,6 +128,7 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
             </SvgText>
           </Svg>
         </Animated.View>
+        </View>
       </GestureDetector>
       <Button title="Go Back" onPress={onGoBack} />
     </GestureHandlerRootView>
@@ -134,6 +141,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  border: {
+    borderWidth: 0,
+    borderColor: 'black',
+    padding: 10,
+    borderRadius: 5,
+  },
 });
 
 export default Prize;
+

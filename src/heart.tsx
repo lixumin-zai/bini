@@ -14,31 +14,51 @@ const { width, height } = Dimensions.get('window');
 const centerX = width / 2;
 const centerY = height / 2;
 const MAX_DISTANCE = Math.sqrt(centerX * centerX + centerY * centerY);
+const yTHRESHOLD = height * 0.1; // 屏幕下方的1/10
+const xTHRESHOLD = width * 0.3; // width * (1-0.3)
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 interface HeartProps {
   onThresholdReached: () => void;
   onhandlePan: (image_id: number) => void;
+  onloveReached: () => void;
 }
 
-const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan }) => {
+const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan, onloveReached}) => {
   const scale = useSharedValue(1);
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
   const clickCount = useSharedValue(0);
+  const loveCount = useSharedValue(0);
   const [count, setCount] = useState(0);
   const opacity = useSharedValue(1);
 
   const handlePress = () => {
     clickCount.value += 1;
     setCount(clickCount.value);
-    if (clickCount.value >= 5) {
+    if (clickCount.value >= 4) {
       runOnJS(onThresholdReached)();
     }
   };
+
+  const handleLove = () => {
+    loveCount.value += 1;
+    setCount(loveCount.value);
+    if (loveCount.value >= 3) {
+      runOnJS(onloveReached)();
+    }
+  };
+  const handleTimeOut = () => {
+    setTimeout(() => {
+      runOnJS(onhandlePan)(2);
+      setTimeout(() => {
+        runOnJS(onhandlePan)(0);
+      }, 2000);
+    }, 0)
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -57,31 +77,43 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan }) => {
       runOnJS(handlePress)();
     })
     .onFinalize(() => {
-      scale.value = withSpring(1, { damping: 1.7 });
+      scale.value = withRepeat(withSpring(1, { damping: 1.7 }), -1, true);
     });
 
   const dragGesture = Gesture.Pan()
     .onBegin(() => {
+      scale.value = withRepeat(withSpring(1.2, { damping: 20 }), -1, true);
       startX.value = offsetX.value;
       startY.value = offsetY.value;
     })
     .onUpdate((event) => {
       runOnJS(onhandlePan)(1);
-      scale.value = withRepeat(withSpring(1, { damping: 1.4 }), -1, true);
-      offsetX.value = startX.value + event.translationX;
-      offsetY.value = startY.value + event.translationY;
+      const newScale = 1 - event.translationY / (centerY * 2); // 缩放比例计算
+      scale.value = newScale;
+      offsetX.value = startX.value + event.translationX / newScale;
+      offsetY.value = startY.value + event.translationY / newScale;
+      scale.value = withRepeat(withSpring(newScale+0.1, { damping: 20 }), -1, true);
       const distance = Math.sqrt(Math.pow(offsetX.value - centerX, 2) + Math.pow(offsetY.value - centerY, 2));
       opacity.value = Math.min(1, distance / MAX_DISTANCE);
     })
     .onEnd(() => {
-      runOnJS(onhandlePan)(0);
+      const centerXCurrent = offsetX.value + width / 2;
+      const centerYCurrent = offsetY.value + height / 2;
+      if (centerYCurrent > height - yTHRESHOLD && centerXCurrent > xTHRESHOLD && centerXCurrent < width - xTHRESHOLD) {
+        runOnJS(handleLove)();
+        runOnJS(handleTimeOut)();
+      }else{
+        runOnJS(onhandlePan)(0);
+      }
       offsetX.value = withSpring(0);
       offsetY.value = withSpring(0);
       opacity.value = withSpring(1);
       scale.value = withSpring(1);
     });
 
-  const combinedGesture = Gesture.Simultaneous(longPress, dragGesture);
+  const combinedGesture = Gesture.Simultaneous(
+    longPress,
+     dragGesture);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -116,7 +148,6 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
