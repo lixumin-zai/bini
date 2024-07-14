@@ -5,7 +5,10 @@ import Animated, {
   useSharedValue,
   withSpring,
   withRepeat,
-  runOnJS
+  withTiming,
+  Easing,
+  runOnJS,
+  interpolateColor
 } from 'react-native-reanimated';
 import Svg, { Rect, Text as SvgText, Circle, Path } from 'react-native-svg';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -29,6 +32,7 @@ interface PrizeProps {
 
 const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
   const [message, setMessage] = useState('');
+  const borderColor = useSharedValue(0);
   const scale = useSharedValue(1);
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
@@ -58,6 +62,14 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * messages.messages.length);
     setMessage(messages.messages[randomIndex]);
+    borderColor.value = withRepeat(
+      withTiming(1, {
+        duration: 500,
+        easing: Easing.linear,
+      }),
+      -1,
+      true
+    );
   }, []);
 
   const dragGesture = Gesture.Pan()
@@ -79,7 +91,7 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
     .onEnd(() => {
       const centerXCurrent = offsetX.value + width / 2;
       const centerYCurrent = offsetY.value + height / 2;
-      if (centerYCurrent > height - yTHRESHOLD) {
+      if (centerYCurrent > height - yTHRESHOLD && centerXCurrent > xTHRESHOLD && centerXCurrent < width - xTHRESHOLD) {
         runOnJS(onhandlePan)(2);
         runOnJS(postRequest)();
       }else{
@@ -105,16 +117,19 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
     opacity: opacity.value,
   }));
 
+  const borderColorStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(borderColor.value, [0, 0.5, 1], ['red', 'orange', 'yellow']),
+  }));
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <GestureDetector gesture={combinedGesture}>
-      <View style={styles.border}>
+      <Animated.View style={[styles.border, borderColorStyle]}>
       {/* <Text style={{fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
     textAlign: 'center',}} >恭喜抽中</Text> */}
-        <Animated.View style={animatedStyle}>
-        
+        <Animated.View style={[animatedStyle]}>
           <Svg height={height* 0.06} width={width * 0.6}>
             <SvgText
               x={width * 0.3}
@@ -128,7 +143,7 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
             </SvgText>
           </Svg>
         </Animated.View>
-        </View>
+        </Animated.View>
       </GestureDetector>
       <Button title="Go Back" onPress={onGoBack} />
     </GestureHandlerRootView>
@@ -142,10 +157,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   border: {
-    borderWidth: 0,
-    borderColor: 'black',
+    borderWidth: 2,
+    borderRadius: 10,
     padding: 10,
-    borderRadius: 5,
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
+    backgroundColor: 'white',
   },
 });
 

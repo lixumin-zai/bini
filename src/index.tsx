@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Image} from 'react-native';
+import { View, StyleSheet} from 'react-native';
 import Heart from './heart';
 import Prize from './prize';
 import Cinnamoroll from './cinnamoroll';
 import Gift from './gift';
 import Edictor from './edictScreen';
+import { mao, erji, yingtao, yinfu } from './giftObject';
 
 const MyComponent = () => {
   // 控制主要页面
@@ -41,19 +42,22 @@ const MyComponent = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{position: 'absolute',top: 100, left: 150, zIndex: 2,borderWidth: 0,borderColor: 'red'}}>
-        <Gift onThresholdReached={handleThresholdReached} onhandlePan={handlePan}></Gift>
+      <View style={{position: 'absolute',top: 60, left: 80, zIndex: 2}}>
+        <Gift onThresholdReached={handleThresholdReached} onhandlePan={handlePan} X={80} Y={60} svgPath={yingtao} imageIndex={3}></Gift>
       </View>
-      <View style={[
-                    styles.coreContainer,
-                    {
-                        transform: [
-                            { translateX: -componentSize.width / 2 },
-                            { translateY: -componentSize.height / 2 },
-                        ],
-                    },
-                ]}
-                onLayout={handleLayout} >
+      <View style={{position: 'absolute',top: 120, right: 60, zIndex: 2,borderWidth: 0,borderColor: 'red'}}>
+        <Gift onThresholdReached={handleThresholdReached} onhandlePan={handlePan} X={-110} Y={120} svgPath={yinfu} imageIndex={4}></Gift>
+      </View>
+      <View style={{position: 'absolute',top: 220, left: 20, zIndex: 2,borderWidth: 0,borderColor: 'red'}}>
+        <Gift onThresholdReached={handleThresholdReached} onhandlePan={handlePan} X={20} Y={220} svgPath={erji} imageIndex={5}></Gift>
+      </View>
+      <View style={{position: 'absolute',top: 300, right: 10, zIndex: 2,borderWidth: 0,borderColor: 'red'}}>
+        <Gift onThresholdReached={handleThresholdReached} onhandlePan={handlePan} X={-60} Y={300} svgPath={mao} imageIndex={6}></Gift>
+      </View>
+      {/* <View style={{position: 'absolute',top: 100, left: 200, zIndex: 2,borderWidth: 0,borderColor: 'red'}}>
+        <Gift onThresholdReached={handleThresholdReached} onhandlePan={handlePan} X={100} Y={100} svgPath={yitao} imageIndex={2}></Gift>
+      </View> */}
+      <View style={[styles.coreContainer,{transform: [{ translateX: -componentSize.width / 2 },{ translateY: -componentSize.height / 2 },],},]}onLayout={handleLayout} >
         {showPage === 1 && <Heart onThresholdReached={handleThresholdReached} onhandlePan={handlePan} onloveReached={handleloveReached}/>}
         {showPage === 2 && <Prize onGoBack={handleGoBack} onhandlePan={handlePan}/>}
         {showPage === 3 && <Edictor onGoBack={handleGoBack} onhandlePan={handlePan}/>}

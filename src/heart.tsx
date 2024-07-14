@@ -56,7 +56,7 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan, onloveRe
       runOnJS(onhandlePan)(2);
       setTimeout(() => {
         runOnJS(onhandlePan)(0);
-      }, 2000);
+      }, 3000);
     }, 0)
   }
 
@@ -67,8 +67,14 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan, onloveRe
         setCount(clickCount.value);
       })();
     }, 1000);
+    const interval2 = setInterval(() => {
+      runOnJS(() => {
+        loveCount.value = Math.max(loveCount.value - 1, 0);
+        setCount(loveCount.value);
+      })();
+    }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {clearInterval(interval); clearInterval(interval2);};
   }, []);
 
   const longPress = Gesture.LongPress()

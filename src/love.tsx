@@ -5,14 +5,11 @@ import Animated, {
   useSharedValue,
   withSpring,
   withRepeat,
-  interpolateColor,
-  runOnJS,
-  Easing,
-  withTiming
+  runOnJS
 } from 'react-native-reanimated';
 import Svg, { Rect, Text as SvgText, Circle, Path } from 'react-native-svg';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Love from './love';
+
 // 导入JSON文件
 const messages = require('./public/massage.json');
 
@@ -30,9 +27,8 @@ interface EdictorProps {
   onhandlePan: (image_id: number) => void;
 }
 
-const Edictor: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
+const Love: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
   const [message, setMessage] = useState('');
-  const borderColor = useSharedValue(0);
   const scale = useSharedValue(1);
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
@@ -60,15 +56,8 @@ const Edictor: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
   };
 
   useEffect(() => {
-    runOnJS(onhandlePan)(2);
-    borderColor.value = withRepeat(
-      withTiming(1, {
-        duration: 500,
-        easing: Easing.linear,
-      }),
-      -1,
-      true
-    );
+    // const randomIndex = Math.floor(Math.random() * messages.messages.length);
+    // setMessage(messages.messages[randomIndex]);
   }, []);
 
   const dragGesture = Gesture.Pan()
@@ -116,73 +105,42 @@ const Edictor: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
     opacity: opacity.value,
   }));
 
-  const borderColorStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(borderColor.value, [0, 0.5, 1], ['red', 'orange', 'yellow']),
-  }));
-
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={[styles.container, {top: height*0.026, right: width*0.5}]}>
       <GestureDetector gesture={combinedGesture}>
-      <Animated.View style={[styles.border, borderColorStyle]}>
-      <Love onGoBack={onGoBack} onhandlePan={onhandlePan}></Love>
-        <Svg height={height* 0.06} width={width * 0.6}>
+      <View style={styles.border}>
+        <Animated.View style={animatedStyle}>
+        <Svg height={20} width={20}>
             <SvgText
-              x={width * 0.3}
-              y={height* 0.04}
+              x={10}
+              y={10}
               fontSize="16"
               fontWeight="bold"
               fill="black"
               textAnchor="middle"
             >
-              你可以提任何愿望
+              💌
             </SvgText>
           </Svg>
-        <Animated.View style={animatedStyle}>
-          
-          <TextInput
-              style={styles.input}
-              value={message}
-              onChangeText={setMessage}
-              placeholder="❤️请输入"
-              placeholderTextColor="#888"
-            />
-          
         </Animated.View>
-        </Animated.View>
+        </View>
       </GestureDetector>
-      <Button title="Go Back" onPress={onGoBack} />
     </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'absolute',
   },
   border: {
-    borderWidth: 2,
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 10,
-    backgroundColor: 'white',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
     borderWidth: 0,
-    marginTop: 10,
-    width: width * 0.6,
-    paddingHorizontal: 10,
+    borderColor: 'black',
+    padding: 10,
     borderRadius: 5,
-    textAlign: 'center',
+    zIndex: 3,
   },
 });
 
-export default Edictor;
+export default Love;
 

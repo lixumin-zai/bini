@@ -16,14 +16,26 @@ interface CinnamorollProps {
 const { width: screenWidth } = Dimensions.get('window');
 
 const images = [
-  { source: require('./public/1.png') },
+  { source: require('./public/2.png') },
+  { source: require('./public/2.png') },
   { source: require('./public/2.png') },
   { source: require('./public/3.png') },
+  { source: require('./public/4.png') },
+  { source: require('./public/5.png') },
+  { source: require('./public/6.png') },
 ];
 
 const polling_images = [
-    { source: require('./public/1.png') },
-    { source: require('./public/2.png') },
+    { source: require('./public/polling_images/1.png') },
+    { source: require('./public/polling_images/3.png') },
+    { source: require('./public/polling_images/4.png') },
+    { source: require('./public/polling_images/5.png') },
+    { source: require('./public/polling_images/6.png') },
+    { source: require('./public/polling_images/7.png') },
+    { source: require('./public/polling_images/8.png') },
+    { source: require('./public/polling_images/9.png') },
+    { source: require('./public/polling_images/10.png') },
+    { source: require('./public/polling_images/11.png') },
   ];
 
 const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
@@ -37,20 +49,20 @@ const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
             fadeAnim.value = withTiming(
                 0,
                 {
-                duration: 1000,
+                duration: 2000,
                 easing: Easing.linear,
                 },
                 (isFinished) => {
                 if (isFinished) {
                     runOnJS(updateIndex)();
                     fadeAnim.value = withTiming(1, {
-                    duration: 1000,
+                    duration: 2000,
                     easing: Easing.linear,
                     });
                 }
                 }
             );
-            }}, 3000);
+            }}, 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -74,7 +86,7 @@ const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
             )}
         </Animated.View>}
         {showFixedImage === 1 && 
-            <View style={styles.imageContainer}>
+            <View style={styles.svgContainer}>
             <CinnamorollSvg />
             </View>
         }
@@ -95,6 +107,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   imageContainer: {
+    position: 'absolute',
+    width: screenWidth,
+    height: 200,
+    bottom: 0,
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  svgContainer: {
     position: 'absolute',
     width: screenWidth,
     height: 200,
