@@ -61,6 +61,8 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan, onloveRe
   }
 
   useEffect(() => {
+    scale.value = withRepeat(withSpring(1.2, { damping: 2 }), -1, true);
+
     const interval = setInterval(() => {
       runOnJS(() => {
         clickCount.value = Math.max(clickCount.value - 1, 0);

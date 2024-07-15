@@ -68,13 +68,13 @@ const Love: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
     })
     .onUpdate((event) => {
       runOnJS(onhandlePan)(1);
-      const newScale = 1 - event.translationY / (centerY * 2); // 缩放比例计算
+      const newScale = 1 + event.translationY / (centerY * 2) + 0.2; // 缩放比例计算
       // scale.value = withRepeat(withSpring(1.2, { damping: 1.7 ,stiffness:20}), -1, true);
       scale.value = withSpring(newScale, { damping: 1.4, stiffness:20});
       offsetX.value = startX.value + event.translationX / newScale;
       offsetY.value = startY.value + event.translationY / newScale;
       const distance = Math.sqrt(Math.pow(offsetX.value - centerX, 2) + Math.pow(offsetY.value - centerY, 2));
-      opacity.value = Math.min(1, distance / MAX_DISTANCE);
+    //   opacity.value = Math.min(1, distance / MAX_DISTANCE);
     })
     .onEnd(() => {
       const centerXCurrent = offsetX.value + width / 2;

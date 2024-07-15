@@ -61,7 +61,7 @@ const Gift: React.FC<GiftProps> = ({ onThresholdReached, onhandlePan, X, Y, svgP
         runOnJS(onhandlePan)(imageIndex);
         setTimeout(() => {
           runOnJS(onhandlePan)(0);
-        }, 3000);
+        }, 4000);
       }, 0)
     }
 

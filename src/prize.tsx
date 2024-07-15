@@ -8,7 +8,8 @@ import Animated, {
   withTiming,
   Easing,
   runOnJS,
-  interpolateColor
+  interpolateColor,
+  withSequence
 } from 'react-native-reanimated';
 import Svg, { Rect, Text as SvgText, Circle, Path } from 'react-native-svg';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -32,6 +33,7 @@ interface PrizeProps {
 
 const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
   const [message, setMessage] = useState('');
+  const [useInfo, setUseInfo] = useState(0); // 记录使用情况
   const borderColor = useSharedValue(0);
   const scale = useSharedValue(1);
   const offsetX = useSharedValue(0);
@@ -39,6 +41,15 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
   const opacity = useSharedValue(1);
+  const centerXCurrent = useSharedValue(0);
+  const centerYCurrent = useSharedValue(0);
+  const tipScale = useSharedValue(1);
+  const tipRotate = useSharedValue(0);
+  
+
+  const logValue = (value: any) => {
+    console.log('startX.value:', value);
+  };
 
   const postRequest = async () => {
     try {
@@ -59,9 +70,21 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
     }
   };
 
+  const fetchUseInfo = async () => {
+    try {
+      const response = await fetch("https://api.example.com/use-info");
+      const data = await response.json();
+      setUseInfo(data.useInfo);
+    } catch (error) {
+      console.error('Error fetching useInfo:', error);
+    }
+  };
+
   useEffect(() => {
+    // fetchUseInfo();   后续更新
     const randomIndex = Math.floor(Math.random() * messages.messages.length);
     setMessage(messages.messages[randomIndex]);
+    scale.value = withRepeat(withSpring(1.2, { damping: 2, stiffness:20}), -1, true);
     borderColor.value = withRepeat(
       withTiming(1, {
         duration: 500,
@@ -80,23 +103,41 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
     })
     .onUpdate((event) => {
       runOnJS(onhandlePan)(1);
-      const newScale = 1 - event.translationY / (centerY * 2); // 缩放比例计算
-      // scale.value = withRepeat(withSpring(1.2, { damping: 1.7 ,stiffness:20}), -1, true);
-      scale.value = withSpring(newScale, { damping: 1.4, stiffness:20});
-      offsetX.value = startX.value + event.translationX / newScale;
-      offsetY.value = startY.value + event.translationY / newScale;
+      const newScale = 1 - (event.translationY / height); // 缩放比例计算
+      centerXCurrent.value = event.translationX + centerX;
+      centerYCurrent.value = event.translationY + centerY;
+      offsetX.value = event.translationX ;
+      offsetY.value = event.translationY ;
       const distance = Math.sqrt(Math.pow(offsetX.value - centerX, 2) + Math.pow(offsetY.value - centerY, 2));
       opacity.value = Math.min(1, distance / MAX_DISTANCE);
     })
-    .onEnd(() => {
-      const centerXCurrent = offsetX.value + width / 2;
-      const centerYCurrent = offsetY.value + height / 2;
-      if (centerYCurrent > height - yTHRESHOLD && centerXCurrent > xTHRESHOLD && centerXCurrent < width - xTHRESHOLD) {
+    .onEnd(()=> {
+      if (centerYCurrent.value > height - yTHRESHOLD && centerXCurrent.value > xTHRESHOLD && centerXCurrent.value < width - xTHRESHOLD) {
         runOnJS(onhandlePan)(2);
-        runOnJS(postRequest)();
+        if(useInfo === 0){
+          runOnJS(setUseInfo)(1);
+          runOnJS(postRequest)();
+        }else{
+          tipScale.value = withSequence(
+            withTiming(1.4, { duration: 200 }),
+            withRepeat(withTiming(1.4, { duration: 100 }), 6, true),
+            withTiming(1, { duration: 200 })
+          );
+          tipRotate.value = withSequence(
+            withTiming(-8, { duration: 50 }),
+            withRepeat(
+              withTiming(8, { duration: 100 }),
+              6,
+              true
+            ),
+            withTiming(0, { duration: 200 })
+          );
+          runOnJS(logValue)("每天一次机会");
+        }
       }else{
         runOnJS(onhandlePan)(0);
       }
+      
       offsetX.value = withSpring(0);
       offsetY.value = withSpring(0);
       opacity.value = withSpring(1);
@@ -117,6 +158,13 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
     opacity: opacity.value,
   }));
 
+  const tipAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: tipScale.value },
+      { rotate: `${tipRotate.value}deg` },
+    ]
+  }));
+
   const borderColorStyle = useAnimatedStyle(() => ({
     borderColor: interpolateColor(borderColor.value, [0, 0.5, 1], ['red', 'orange', 'yellow']),
   }));
@@ -130,11 +178,11 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
     color: 'black',
     textAlign: 'center',}} >恭喜抽中</Text> */}
         <Animated.View style={[animatedStyle]}>
-          <Svg height={height* 0.06} width={width * 0.6}>
+          <Svg height={height* 0.08} width={width * 0.6}>
             <SvgText
               x={width * 0.3}
               y={height* 0.04}
-              fontSize="16"
+              fontSize="20"
               fontWeight="bold"
               fill="black"
               textAnchor="middle"
@@ -143,6 +191,12 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
             </SvgText>
           </Svg>
         </Animated.View>
+        <Animated.View style={[tipAnimatedStyle]}>
+        <Text style={{color: 'gray',
+    fontSize: 10,
+    textAlign: 'center',
+    bottom: 2,}}>每天一次机会哦</Text>
+    </Animated.View>
         </Animated.View>
       </GestureDetector>
       <Button title="Go Back" onPress={onGoBack} />

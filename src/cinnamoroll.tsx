@@ -10,8 +10,8 @@ import Animated, {
 import CinnamorollSvg from "./cinnamoroll_svg";
 
 interface CinnamorollProps {
-    showFixedImage: number;
-  }
+  showFixedImage: number;
+}
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -26,50 +26,54 @@ const images = [
 ];
 
 const polling_images = [
-    { source: require('./public/polling_images/1.png') },
-    { source: require('./public/polling_images/3.png') },
-    { source: require('./public/polling_images/4.png') },
-    { source: require('./public/polling_images/5.png') },
-    { source: require('./public/polling_images/6.png') },
-    { source: require('./public/polling_images/7.png') },
-    { source: require('./public/polling_images/8.png') },
-    { source: require('./public/polling_images/9.png') },
-    { source: require('./public/polling_images/10.png') },
-    { source: require('./public/polling_images/11.png') },
-  ];
+  { source: require('./public/polling_images/1.png') },
+  { source: require('./public/polling_images/3.png') },
+  { source: require('./public/polling_images/4.png') },
+  { source: require('./public/polling_images/5.png') },
+  { source: require('./public/polling_images/6.png') },
+  { source: require('./public/polling_images/7.png') },
+  { source: require('./public/polling_images/8.png') },
+  { source: require('./public/polling_images/9.png') },
+  { source: require('./public/polling_images/10.png') },
+  { source: require('./public/polling_images/11.png') },
+];
 
 const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const fadeAnim = useSharedValue(1);
-  
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-        if (!showFixedImage) {
-            fadeAnim.value = withTiming(
-                0,
-                {
-                duration: 2000,
-                easing: Easing.linear,
-                },
-                (isFinished) => {
-                if (isFinished) {
-                    runOnJS(updateIndex)();
-                    fadeAnim.value = withTiming(1, {
-                    duration: 2000,
-                    easing: Easing.linear,
-                    });
-                }
-                }
-            );
-            }}, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const updateIndex = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % polling_images.length);
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fadeAnim.value = withTiming(1, {
+        duration: 500,
+        easing: Easing.linear,
+      });
+      if (!showFixedImage) {
+        fadeAnim.value = withTiming(
+          0,
+          {
+            duration: 1000,
+            easing: Easing.linear,
+          },
+          (isFinished) => {
+            if (isFinished) {
+              runOnJS(updateIndex)();
+              fadeAnim.value = withTiming(1, {
+                duration: 2000,
+                easing: Easing.linear,
+              });
+            }
+          }
+        );
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [showFixedImage]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -78,24 +82,26 @@ const Cinnamoroll: React.FC<CinnamorollProps> = ({ showFixedImage }) => {
   });
 
   return (
-    <View style={styles.container} >
-        {showFixedImage === 0 && 
+    <View style={styles.container}>
+      {showFixedImage === 0 && (
         <Animated.View style={[styles.imageContainer, animatedStyle]}>
-            {polling_images[currentIndex] && (
+          {polling_images[currentIndex] && (
             <Image source={polling_images[currentIndex].source} style={styles.image} />
-            )}
-        </Animated.View>}
-        {showFixedImage === 1 && 
-            <View style={styles.svgContainer}>
-            <CinnamorollSvg />
-            </View>
-        }
-        {showFixedImage >= 2 && 
-            <Animated.View style={[styles.imageContainer, animatedStyle]}>
-                {images[showFixedImage] && (
-                <Image source={images[showFixedImage].source} style={styles.image} />
-                )}
-            </Animated.View>}
+          )}
+        </Animated.View>
+      )}
+      {showFixedImage === 1 && (
+        <Animated.View style={[styles.svgContainer, animatedStyle]}>
+          <CinnamorollSvg />
+        </Animated.View>
+      )}
+      {showFixedImage >= 2 && (
+        <Animated.View style={[styles.imageContainer, animatedStyle]}>
+          {images[showFixedImage] && (
+            <Image source={images[showFixedImage].source} style={styles.image} />
+          )}
+        </Animated.View>
+      )}
     </View>
   );
 };
