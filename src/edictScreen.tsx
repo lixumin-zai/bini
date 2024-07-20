@@ -28,9 +28,10 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 interface EdictorProps {
   onGoBack: () => void;
   onhandlePan: (image_id: number) => void;
+  onshowLatter: (isshow: number) => void;
 }
 
-const Edictor: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
+const Edictor: React.FC<EdictorProps> = ({ onGoBack, onhandlePan, onshowLatter }) => {
   const [message, setMessage] = useState('');
   const borderColor = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -124,7 +125,7 @@ const Edictor: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
     <GestureHandlerRootView style={styles.container}>
       <GestureDetector gesture={combinedGesture}>
       <Animated.View style={[styles.border, borderColorStyle]}>
-      <Love onGoBack={onGoBack} onhandlePan={onhandlePan}></Love>
+      <Love onhandlePan={onhandlePan} onshowLatter={onshowLatter}></Love>
         <Svg height={height* 0.06} width={width * 0.6}>
             <SvgText
               x={width * 0.3}

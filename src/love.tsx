@@ -1,40 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Button, Dimensions, TextInput} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  interpolateColor,
   withSpring,
   withRepeat,
   runOnJS
 } from 'react-native-reanimated';
-import Svg, { Rect, Text as SvgText, Circle, Path } from 'react-native-svg';
+import Svg, {Rect, Text as SvgText } from 'react-native-svg';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 // 导入JSON文件
 const messages = require('./public/massage.json');
 
 const { width, height } = Dimensions.get('window');
-const centerX = width / 2;
-const centerY = height / 2;
-const MAX_DISTANCE = Math.sqrt(centerX * centerX + centerY * centerY);
-const yTHRESHOLD = height * 0.1; // 屏幕下方的1/10
-const xTHRESHOLD = width * 0.3; // width * (1-0.3)
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
-interface EdictorProps {
-  onGoBack: () => void;
+interface LoveProps {
   onhandlePan: (image_id: number) => void;
+  onshowLatter: (isshow: number) => void;
 }
 
-const Love: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
-  const [message, setMessage] = useState('');
-  const scale = useSharedValue(1);
-  const offsetX = useSharedValue(0);
-  const offsetY = useSharedValue(0);
-  const startX = useSharedValue(0);
-  const startY = useSharedValue(0);
-  const opacity = useSharedValue(1);
+const Love: React.FC<LoveProps> = ({ onhandlePan, onshowLatter}) => {
+    const [message, setMessage] = useState('');
+    const [showLetter, setShowLetter] = useState(0);
+    const [X, setX] = useState(0);
+    const [Y, setY] = useState(0);
+    const [componentWidth, setComponentWidth] = useState(0);
+    const [componentHeight, setComponentHeight] = useState(0);
+    const viewRef = useRef(null);
+    const measureView = () => {
+      viewRef.current.measure((fx, fy, width, height, px, py) => {
+        setX(px);
+        setY(py);
+        setComponentWidth(width);
+        setComponentHeight(height);
+        
+      });
+    };
+    
+    const centerX = (width+X)%width + componentWidth/2; // 默认大小50 50 X， Y为绝对路径 所以中心点为+25
+    const centerY = (height+Y)%height + componentHeight/2;
+    const MAX_DISTANCE = (height-centerY);
+    const yTHRESHOLD = height * 0.15; // 屏幕下方的1/10
+    const xTHRESHOLD = width * 0.25; // width * (1-0.3)
+
+    const scale = useSharedValue(1);
+    const offsetX = useSharedValue(0);
+    const offsetY = useSharedValue(0);
+    const startX = useSharedValue(0);
+    const startY = useSharedValue(0);
+    const clickCount = useSharedValue(0);
+    const [count, setCount] = useState(0);
+    const opacity = useSharedValue(1);
+    const rotation = useSharedValue(0);
+    const centerXCurrent = useSharedValue(0);
+    const centerYCurrent = useSharedValue(0);
+
+    const borderColor = useSharedValue(0);
 
   const postRequest = async () => {
     try {
@@ -55,6 +80,10 @@ const Love: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
     }
   };
 
+  const logValue = (value: any) => {
+    console.log('startX.value:', value);
+  };
+
   useEffect(() => {
     // const randomIndex = Math.floor(Math.random() * messages.messages.length);
     // setMessage(messages.messages[randomIndex]);
@@ -63,25 +92,31 @@ const Love: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
   const dragGesture = Gesture.Pan()
     .onBegin(() => {
       scale.value = withRepeat(withSpring(1.2, { damping: 2, stiffness:20}), -1, true);
-      startX.value = offsetX.value;
-      startY.value = offsetY.value;
+      startX.value = centerX;
+      startY.value = centerY;
     })
     .onUpdate((event) => {
       runOnJS(onhandlePan)(1);
-      const newScale = 1 + event.translationY / (centerY * 2) + 0.2; // 缩放比例计算
-      // scale.value = withRepeat(withSpring(1.2, { damping: 1.7 ,stiffness:20}), -1, true);
-      scale.value = withSpring(newScale, { damping: 1.4, stiffness:20});
-      offsetX.value = startX.value + event.translationX / newScale;
-      offsetY.value = startY.value + event.translationY / newScale;
-      const distance = Math.sqrt(Math.pow(offsetX.value - centerX, 2) + Math.pow(offsetY.value - centerY, 2));
-    //   opacity.value = Math.min(1, distance / MAX_DISTANCE);
+      const newScale = 1 + (event.translationY / height)+0.4;
+      centerXCurrent.value = event.translationX + centerX;
+      centerYCurrent.value = event.translationY + centerY;
+      offsetX.value = event.translationX / newScale;
+      offsetY.value = event.translationY / newScale;
+
+      scale.value = newScale;
+      const distance = Math.sqrt(
+        Math.pow(offsetX.value - centerX, 2) + Math.pow(offsetY.value - centerY, 2)
+      );
+      opacity.value = Math.min(1, distance-100 / height)
     })
     .onEnd(() => {
-      const centerXCurrent = offsetX.value + width / 2;
-      const centerYCurrent = offsetY.value + height / 2;
-      if (centerYCurrent > height - yTHRESHOLD) {
-        runOnJS(onhandlePan)(2);
-        runOnJS(postRequest)();
+      if (centerYCurrent.value > height - yTHRESHOLD && centerXCurrent.value > xTHRESHOLD && centerXCurrent.value < width - xTHRESHOLD) {
+        offsetX.value = withSpring(0);
+        offsetY.value = withSpring(0);
+        runOnJS(onshowLatter)(1);
+        // runOnJS(postRequest)();
+        runOnJS(onhandlePan)(0);
+        runOnJS(setShowLetter)(1-showLetter);
       }else{
         runOnJS(onhandlePan)(0);
       }
@@ -105,25 +140,38 @@ const Love: React.FC<EdictorProps> = ({ onGoBack, onhandlePan }) => {
     opacity: opacity.value,
   }));
 
+  const writeAnimated = useAnimatedStyle(() => ({
+    transform: [
+      { scale: scale.value },
+      { translateX: offsetX.value },
+      { translateY: offsetY.value },
+    ],
+    opacity: opacity.value,
+    borderColor: interpolateColor(borderColor.value, [0, 0.5, 1], ['red', 'orange', 'yellow']),
+  }));
+
   return (
-    <GestureHandlerRootView style={[styles.container, {top: height*0.026, right: width*0.5}]}>
+    <GestureHandlerRootView  style={[
+      styles.container,{ top: height * 0.022, right: width * 0.48 }
+    ]}>
       <GestureDetector gesture={combinedGesture}>
-      <View style={styles.border}>
+      <View style={styles.border} ref={viewRef} onLayout={measureView}>
+      
         <Animated.View style={animatedStyle}>
-        <Svg height={20} width={20}>
+        <Svg height={30} width={30}>
             <SvgText
-              x={10}
-              y={10}
+              x={15}
+              y={15}
               fontSize="16"
               fontWeight="bold"
               fill="black"
               textAnchor="middle"
             >
-              💌
+              {showLetter === 0 ? '💌' : '💋'}
             </SvgText>
           </Svg>
         </Animated.View>
-        </View>
+      </View>
       </GestureDetector>
     </GestureHandlerRootView>
   );
@@ -138,9 +186,8 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     padding: 10,
     borderRadius: 5,
-    zIndex: 3,
-  },
+    zIndex: 4,
+  }
 });
 
 export default Love;
-

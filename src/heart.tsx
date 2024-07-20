@@ -47,7 +47,7 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan, onloveRe
   const handleLove = () => {
     loveCount.value += 1;
     setCount(loveCount.value);
-    if (loveCount.value >= 3) {
+    if (loveCount.value >= 4) {
       runOnJS(onloveReached)();
     }
   };
@@ -61,7 +61,7 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan, onloveRe
   }
 
   useEffect(() => {
-    scale.value = withRepeat(withSpring(1.2, { damping: 2 }), -1, true);
+    // scale.value = withRepeat(withSpring(1.2, { damping: 2 }), -1, true);
 
     const interval = setInterval(() => {
       runOnJS(() => {
@@ -90,12 +90,13 @@ const Heart: React.FC<HeartProps> = ({ onThresholdReached, onhandlePan, onloveRe
 
   const dragGesture = Gesture.Pan()
     .onBegin(() => {
-      scale.value = withRepeat(withSpring(1.2, { damping: 20 }), -1, true);
+      scale.value = withRepeat(withSpring(1.5, { damping: 1.7 }), -1, true);
       startX.value = offsetX.value;
       startY.value = offsetY.value;
     })
     .onUpdate((event) => {
       runOnJS(onhandlePan)(1);
+      scale.value = withRepeat(withSpring(1.2, { damping: 20 }), -1, true);
       const newScale = 1 - event.translationY / (centerY * 2); // 缩放比例计算
       scale.value = newScale;
       offsetX.value = startX.value + event.translationX / newScale;

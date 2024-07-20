@@ -42,3 +42,9 @@ https://autosvg.vercel.app/
 玉桂狗
 https://www.pinterest.com.au/pin/979321881459868552/
 ```
+
+```
+# 配置启动页
+打开 LaunchScreen.storyboard 文件 修改
+
+```

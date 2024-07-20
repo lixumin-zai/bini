@@ -195,7 +195,7 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
         <Text style={{color: 'gray',
     fontSize: 10,
     textAlign: 'center',
-    bottom: 2,}}>每天一次机会哦</Text>
+    bottom: 2,}}>每天只能抽一次哦</Text>
     </Animated.View>
         </Animated.View>
       </GestureDetector>
