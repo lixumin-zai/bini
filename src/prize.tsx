@@ -29,9 +29,10 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 interface PrizeProps {
   onGoBack: () => void;
   onhandlePan: (image_id: number) => void;
+  prizeInfo: any;
 }
 
-const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
+const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan, prizeInfo }) => {
   const [message, setMessage] = useState('');
   const [useInfo, setUseInfo] = useState(0); // 记录使用情况
   const borderColor = useSharedValue(0);
@@ -72,18 +73,20 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
 
   const fetchUseInfo = async () => {
     try {
-      const response = await fetch("https://api.example.com/use-info");
+      const response = await fetch("http://1.203.96.170:20010/message");
+      // const response = await fetch("http://192.168.1.206:20010/message");
       const data = await response.json();
-      setUseInfo(data.useInfo);
+      setUseInfo(data.messages);
+      
     } catch (error) {
       console.error('Error fetching useInfo:', error);
     }
   };
-
   useEffect(() => {
-    // fetchUseInfo();   后续更新
+    const messages = prizeInfo;
     const randomIndex = Math.floor(Math.random() * messages.messages.length);
     setMessage(messages.messages[randomIndex]);
+    // setMessage(useInfo[randomIndex]);
     scale.value = withRepeat(withSpring(1.2, { damping: 2, stiffness:20}), -1, true);
     borderColor.value = withRepeat(
       withTiming(1, {
@@ -94,6 +97,7 @@ const Prize: React.FC<PrizeProps> = ({ onGoBack, onhandlePan }) => {
       true
     );
   }, []);
+
 
   const dragGesture = Gesture.Pan()
     .onBegin(() => {

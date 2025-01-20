@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { View, StyleSheet, Text} from 'react-native';
 import Heart from './heart';
 import Prize from './prize';
@@ -19,6 +19,10 @@ const MyComponent = () => {
 
   const [showLetter, setShowLetter] = useState(0);
 
+  const [prizeInfo, setPrizeInfo] = useState([]); // 记录使用情况
+  const [letterInfo, setLetterInfo] = useState(""); // 记录使用情况
+
+
   const handleLayout = (event:any) => {
       const { width, height } = event.nativeEvent.layout;
       setComponentSize({ width, height });
@@ -31,6 +35,8 @@ const MyComponent = () => {
   const handleGoBack = () => {
     setShowFixedImage(0);
     setShowPage(1);
+    fetchPrizeInfo();
+    fetchLetterInfo();
   };
 
   const handlePan = (image_id: number) => {
@@ -46,7 +52,36 @@ const MyComponent = () => {
     // 0 轮询 其他固定
     setShowLetter(isshow);
   };
-  
+  const fetchPrizeInfo = async () => {
+    try {
+      const response = await fetch("https://lismin.online:8888/message");
+      // const response = await fetch("http://192.168.1.206:20010/message");
+      const data = await response.json();
+      setPrizeInfo(data);
+    } catch (error) {
+      const data = require('./public/massage.json');
+      setPrizeInfo(data);
+      console.error('Error fetching message:', error);
+    }
+  };
+
+  const fetchLetterInfo = async () => {
+    try {
+      const response = await fetch("https://lismin.online:8888/letter");
+      // const response = await fetch("http://192.168.1.206:20010/message");
+      const data = await response.json();
+      setLetterInfo(data);
+    } catch (error) {
+      const data = require('./public/letter.json');
+      setLetterInfo(data);
+      console.error('Error fetching useInfo:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPrizeInfo();
+    fetchLetterInfo();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -65,14 +100,14 @@ const MyComponent = () => {
       <Title></Title>
       <View style={[styles.coreContainer,{transform: [{ translateX: -componentSize.width / 2 },{ translateY: -componentSize.height / 2 },],},]}onLayout={handleLayout} >
         {showPage === 1 && <Heart onThresholdReached={handleThresholdReached} onhandlePan={handlePan} onloveReached={handleloveReached}/>}
-        {showPage === 2 && <Prize onGoBack={handleGoBack} onhandlePan={handlePan}/>}
+        {showPage === 2 && <Prize onGoBack={handleGoBack} onhandlePan={handlePan} prizeInfo={prizeInfo}/>}
         {showPage === 3 && <Edictor onGoBack={handleGoBack} onhandlePan={handlePan} onshowLatter={onshowLatter}/>}
       </View>
       <View style={[styles.cinnamorollContainer]}>
       <Cinnamoroll showFixedImage={showFixedImage} />
       </View>
       <View style={styles.letterContainer}>
-        {showLetter === 1 && <Letter onshowLatter={onshowLatter}></Letter>}
+        {showLetter === 1 && <Letter onshowLatter={onshowLatter} letter={letterInfo}></Letter>}
       </View>
     </View>
   );

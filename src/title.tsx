@@ -25,7 +25,7 @@ const Title: React.FC<TitleProps> = () => {
     const scale = useSharedValue(1);
     const opacity = useSharedValue(1);
     const changeText = () => {
-        setText((prevText) => (prevText === '有彩蛋哦' ? '爱心可以跳动' : '有彩蛋哦'));
+        setText((prevText) => (prevText === '有彩蛋哦' ? '爱心可以跳动和拖动' : '有彩蛋哦'));
     };
 
     useEffect(() => {

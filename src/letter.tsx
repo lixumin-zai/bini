@@ -15,11 +15,12 @@ const { width, height } = Dimensions.get('window');
 
 interface LetterProps {
     onshowLatter: (isshow: number) => void;
+    letter: any;
 }
 
-const letter = require('./public/letter.json');
+// const letter = require('./public/letter.json');
 
-const Letter: React.FC<LetterProps> = ({onshowLatter}) => {
+const Letter: React.FC<LetterProps> = ({onshowLatter, letter}) => {
     const [displayedText, setDisplayedText] = useState('');
     const [isTextComplete, setIsTextComplete] = useState(false);
     const fullText = letter.letter;
@@ -35,7 +36,7 @@ const Letter: React.FC<LetterProps> = ({onshowLatter}) => {
                 setTimeout(() => {
                     clearInterval(intervalId);
                     setIsTextComplete(true); // 文本显示完成后设置状态
-                }, 1000); // 50毫秒延迟，以确保文本更新后滚动
+                }, 500); // 50毫秒延迟，以确保文本更新后滚动
             }
             scrollViewRef.current?.scrollToEnd({ animated: true });
         }, 100); // 每个字符出现的间隔时间，可以根据需要调整
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 18, // 可以根据需要调整文字大小
         textAlign: 'left', // 左对齐
-        lineHeight: 24, // 调整行高以增加可读性
+        lineHeight: 28, // 调整行高以增加可读性
         fontWeight: 'bold', // 加粗字体
     },
     buttonContainer: {
